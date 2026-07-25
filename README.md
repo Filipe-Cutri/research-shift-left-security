@@ -1,7 +1,7 @@
 # Shift-Left Security in CI/CD — Estudo Experimental
 
 Repositório de apoio à IC "Avaliação Comparativa e de Desempenho na Adoção de
-Segurança Shift-Left em Esteiras CI/CD" (FHO — orientação Prof. Mateus Yamaguti).
+Segurança Shift-Left em Esteiras CI/CD" (FHO — orientação Prof. Mateus Yamaguti)
 
 ## O que este repositório faz
 
