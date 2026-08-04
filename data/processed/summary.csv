@@ -1,0 +1,5 @@
+,build_time_seconds,build_time_seconds,build_time_seconds,vulnerabilities_detected,false_positives
+,mean,std,count,mean,mean
+pipeline_type,,,,,
+baseline,16.0,,1,0.0,0.0
+shift-left,61.0,,1,106.0,0.0

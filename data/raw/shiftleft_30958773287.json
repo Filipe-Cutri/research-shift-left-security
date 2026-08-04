@@ -1,0 +1,11 @@
+{
+  "run_id": "30958773287",
+  "pipeline_type": "shift-left",
+  "commit_sha": "c9a3e29e0c3c1ef64986fdbbf6d5cf4c17355cd2",
+  "build_time_seconds": 61,
+  "security_stage_seconds": 61,
+  "vulnerabilities_detected": 106,
+  "vulnerabilities_expected": 0,
+  "false_positives": 0,
+  "timestamp": "2026-08-04T23:06:09Z"
+}
