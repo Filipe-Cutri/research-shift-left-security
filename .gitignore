@@ -1,0 +1,20 @@
+# Ambiente Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Artefatos locais/temporários de execução (não confundir com data/raw,
+# que É versionado propositalmente para reprodutibilidade)
+semgrep-results.json
+trivy-results.json
+
+# SO / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Resultados gerados localmente antes de commitar a versão final
+# (descomente se quiser regenerar sempre a partir de data/raw)
+# results/figures/*.png
+# data/processed/summary.csv

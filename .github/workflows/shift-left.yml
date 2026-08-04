@@ -1,0 +1,88 @@
+name: Shift-Left Pipeline (SAST + SCA)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Record pipeline start
+        id: pipeline_start
+        run: echo "start=$(date +%s)" >> "$GITHUB_OUTPUT"
+
+      - name: Record security stage start
+        id: sec_start
+        run: echo "start=$(date +%s)" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Python (for Semgrep)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run Semgrep (SAST)
+        run: |
+          pip install semgrep --break-system-packages
+          semgrep --config=auto --json --output=semgrep-results.json . || true
+
+      - name: Build Docker image
+        run: docker build -t juice-shop:shift-left -f docker/Dockerfile .
+
+      - name: Run Trivy (SCA — filesystem + imagem)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: juice-shop:shift-left
+          format: json
+          output: trivy-results.json
+        continue-on-error: true
+
+      - name: Record security stage end
+        id: sec_end
+        run: |
+          end=$(date +%s)
+          duration=$((end - ${{ steps.sec_start.outputs.start }}))
+          echo "duration=$duration" >> "$GITHUB_OUTPUT"
+
+      - name: Record pipeline end
+        id: pipeline_end
+        run: |
+          end=$(date +%s)
+          duration=$((end - ${{ steps.pipeline_start.outputs.start }}))
+          echo "duration=$duration" >> "$GITHUB_OUTPUT"
+
+      - name: Parse vulnerability counts
+        id: parse
+        run: python3 scripts/parse_scan_results.py semgrep-results.json trivy-results.json
+
+      - name: Save result JSON
+        run: |
+          mkdir -p data/raw
+          cat <<EOF > data/raw/shiftleft_${{ github.run_id }}.json
+          {
+            "run_id": "${{ github.run_id }}",
+            "pipeline_type": "shift-left",
+            "commit_sha": "${{ github.sha }}",
+            "build_time_seconds": ${{ steps.pipeline_end.outputs.duration }},
+            "security_stage_seconds": ${{ steps.sec_end.outputs.duration }},
+            "vulnerabilities_detected": ${{ steps.parse.outputs.total_findings }},
+            "vulnerabilities_expected": 0,
+            "false_positives": 0,
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          }
+          EOF
+
+      - name: Upload result artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: shiftleft-result-${{ github.run_id }}
+          path: data/raw/shiftleft_${{ github.run_id }}.json
+
+      - name: Upload raw scan reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: shiftleft-scan-reports-${{ github.run_id }}
+          path: |
+            semgrep-results.json
+            trivy-results.json

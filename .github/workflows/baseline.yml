@@ -1,0 +1,47 @@
+name: Baseline Pipeline (No Security)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Record start time
+        id: start
+        run: echo "start=$(date +%s)" >> "$GITHUB_OUTPUT"
+
+      - name: Build Docker image
+        run: docker build -t juice-shop:baseline -f docker/Dockerfile .
+
+      - name: Compute build duration
+        id: timing
+        run: |
+          end=$(date +%s)
+          duration=$((end - ${{ steps.start.outputs.start }}))
+          echo "duration=$duration" >> "$GITHUB_OUTPUT"
+
+      - name: Save result JSON
+        run: |
+          mkdir -p data/raw
+          cat <<EOF > data/raw/baseline_${{ github.run_id }}.json
+          {
+            "run_id": "${{ github.run_id }}",
+            "pipeline_type": "baseline",
+            "commit_sha": "${{ github.sha }}",
+            "build_time_seconds": ${{ steps.timing.outputs.duration }},
+            "security_stage_seconds": 0,
+            "vulnerabilities_detected": 0,
+            "vulnerabilities_expected": 0,
+            "false_positives": 0,
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          }
+          EOF
+
+      - name: Upload result artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: baseline-result-${{ github.run_id }}
+          path: data/raw/baseline_${{ github.run_id }}.json
