@@ -6,7 +6,7 @@ Segurança Shift-Left em Esteiras CI/CD" (FHO — orientação Prof. Mateus Yama
 ## O que este repositório faz
 
 Compara dois pipelines de CI/CD rodando sobre a mesma aplicação vulnerável
-(OWASP Juice Shop)
+(OWASP Juice Shop).
 
 - **`baseline.yml`** — pipeline "tradicional", sem nenhuma ferramenta de
   segurança embarcada (grupo controle).
